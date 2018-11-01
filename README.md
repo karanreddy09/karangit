@@ -1,2 +1,3 @@
 # karangit
-git learning
+git learning 
+2mnths target
