@@ -1,0 +1,199 @@
+
+	<div id="product-search-page" ng-controller="ProductSearchPageController as searchPageCtrl">
+
+
+	   <div class="search-header">
+	       <search-bar search-text="searchBarText"></search-bar>
+	   </div>
+
+
+	   <div class="disc" ng-show="(userModel.isChinaUser() && userModel.getShowWholesale())">
+	       <price-disclaimer></price-disclaimer>
+	   </div>
+
+
+	   <div class=" centered ">
+
+
+	       <div ng-if="campaignErrorMessage.length> 0" class="general-error">
+	           <span class="error-icon"></span>
+	           <span ng-if="campaignErrorMessage === 'campaigns.future'">{{ campaignErrorMessage | sprintf:( startDate | date: 'shortDate' )}}</span>
+	           <span ng-if="campaignErrorMessage === 'campaigns.expired'">{{ campaignErrorMessage | sprintf:( expirationDate | date: 'shortDate' )}}</span>
+	           <span ng-if="campaignErrorMessage === 'campaigns.not found'">{{ campaignErrorMessage | translate }}</span>
+	           <span class="off-btn" ng-click="searchPageCtrl.hideCampaignError()"></span>
+	       </div>
+
+
+	       <div ng-if="searchPageCtrl.droppedProductErrorMessage && searchPageCtrl.droppedProductErrorMessage === 'unauthorized'" class="general-error">
+	           <span class="error-icon"></span>
+	           <span>{{'common.state.' + searchPageCtrl.droppedProductErrorMessage | translate}}</span>
+	           <span class="off-btn" ng-click="searchPageCtrl.clearDroppedProduct()"></span>
+	       </div>
+
+
+
+
+
+
+	       <side class="fl">
+	           <div ng-if="userModel.contractSearchEnabled">
+	               <search-field search-text="searchPageCtrl.contractNumber"></search-field>
+	           </div>
+
+
+	           <product-filter></product-filter>
+	       </side>
+
+
+	       <div ng-if="!searchPageCtrl.showResults">
+	           <div ng-if="contractModel.contractLookupStatus===enums.CONTRACT_LOOKUP_INVALID" class="no-results-found">
+	               <h1> {{ 'common.text.search no results found for' | translate }} {{searchPageCtrl.contractNumber}}</h1>
+	           </div>
+	       </div>
+	       <div class="results-area" ng-if="searchPageCtrl.showResults">
+
+
+	           <div ng-if="searchPageCtrl.showDroppedProduct" class="dropped-product">
+
+
+	               <h2 class="dp-header">{{'common.text.showing replacements for' | translate }}:</h2>
+
+
+	               <div ng-show="searchPageCtrl.droppedProductErrorMessage && searchPageCtrl.droppedProductErrorMessage === 'invalid product'"
+	                   class="search-error">
+	                   <span class="error-items">
+	                       <span class="error-icon"></span> {{searchPageCtrl.droppedProductStyleColor}} {{ 'common.text.search.returned no results' |
+	                       translate }}
+	                       <span class="off-btn" ng-click="searchPageCtrl.clearDroppedProduct()"></span>
+	                   </span>
+	               </div>
+
+
+	               <table class="dp-table" ng-hide="searchPageCtrl.droppedProductErrorMessage">
+	                   <tr class="dp-row">
+	                       <td class="dp-image">
+	                           <img ng-src="{{searchPageCtrl.droppedProductStyleColor | image:'35':'35'}}" />
+	                       </td>
+	                       <td class="dp-product">
+	                           {{searchPageCtrl.droppedProductStyleColor}}
+	                           <br/> {{searchPageCtrl.droppedProduct.name}}
+	                       </td>
+	                       <td class="dp-price">
+	                           <span class="dp-label">
+	                               <span ng-if="userModel.getShowWholesale()">{{ 'common.text.wholesale' | translate }}</span>
+	                               <span ng-if="userModel.getShowWholesale() && userModel.getShowRetail()">/</span>
+	                               <span ng-if="userModel.getShowRetail()">{{ 'common.text.retail' | translate }}</span>:
+	                           </span>
+	                           <br/>
+	                           <span ng-if="userModel.getShowWholesale()">{{searchPageCtrl.droppedProduct.wholesalePrice / 100 | userCurrency}}</span>
+	                           <span ng-if="userModel.getShowWholesale() && userModel.getShowRetail()">/</span>
+	                           <span ng-if="userModel.getShowRetail()">{{searchPageCtrl.droppedProduct.retailPrice / 100 | userCurrency}}</span>
+	                       </td>
+	                       <td class="dp-quantity">
+	                           <span class="dp-label">{{'common.text.requested' | translate }}:</span>
+	                           <br/> {{searchPageCtrl.droppedProductQuantity}}
+	                       </td>
+	                       <td class="dp-clear" ng-click="searchPageCtrl.clearDroppedProduct()">
+	                           <span class="x-icon"></span>
+	                       </td>
+	                   </tr>
+	               </table>
+	           </div>
+
+
+	           <div class="search-results-header-wrapper">
+	               <div class="search-results-header">
+	                   <h1 ng-show="!searchPageCtrl.searchText.length && !searchPageCtrl.filteredSearchText.length && !searchPageCtrl.showContract">{{ 'common.text.shop at-once' | translate }}</h1>
+	                   <h1 ng-if="searchPageCtrl.showContract">{{contractModel.currentContract.name}} ({{contractModel.currentContract.contractNumber}})
+	                       <span ng-mouseenter="showToolTip = true" ng-mouseleave="showToolTip = false" class="tooltip-icon">
+	                           <span class="tooltip-i">i</span>
+	                       </span>
+	                       <div class="tooltip" ng-show="showToolTip">
+	                           <span class="arrow"></span>
+	                           <h2 class="tooltip-header">{{'contract.contract info' | translate | uppercase}}</h2>
+	                           <ul>
+	                               <li>
+	                                   <span class="item-label">{{'contract.start date'| translate}}:</span>
+	                                   <span class="item-content">{{contractModel.currentContract.beginDate | date:'mediumDate'}}</span>
+	                               </li>
+	                               <li>
+	                                   <Span class="item-label">{{'contract.end date'| translate}}:</span>
+	                                   <span class="item-content">{{contractModel.currentContract.endDate | date:'mediumDate'}}</span>
+	                               </li>
+	                           </ul>
+	                       </div>
+	                   </h1>
+
+
+	                   <h1 ng-show="!searchPageCtrl.noResults && (searchPageCtrl.searchText.length || searchPageCtrl.filteredSearchText.length)">{{'common.text.search results for' | translate }}</h1>
+	                   <h1 ng-show="searchPageCtrl.noResults && (searchPageCtrl.searchText.length || searchPageCtrl.filteredSearchText.length)">{{ 'common.text.search no results found for' | translate }}</h1>
+	               </div>
+
+
+	               <div class="search-sort">
+	                   <span class="search-sort-label fl">{{'common.ctas.sort by' | translate }}</span>
+	                   <span class="fl" ng-click="searchPageCtrl.onDropdownSelect()">
+	                       <dropdown id='search-sort' data='searchPageCtrl.sortOptions'></dropdown>
+	                   </span>
+	               </div>
+	           </div>
+
+
+	           <div ng-if="productModel.searchResults.totalSize !== '...'" class="search-results-count">
+	               <!-- {{productModel.searchResults.totalSize}} {{ 'common.text.products' | translate | uppercase }} -->
+	               <!--commented until a permenant fix is applied to resolve total count and number of products being displayed-->
+	               <span class="add-all" ng-if="searchPageCtrl.showAddAllLink" ng-click="searchPageCtrl.clickAddAll($event)">
+	                   {{(filterModel.data.requestType ==="NOW")?
+	                       ('common.ctas.cart.add all to' | translate):
+	                       ('common.ctas.cart.add all products with availability' | translate)
+	                   }}
+	               </span>
+	           </div>
+
+
+	           <div ng-if="searchPageCtrl.filteredBy.length" class="search-filtered-by">
+	               <b>{{'common.ctas.filtered by' | translate}}: </b>
+	               <span>{{searchPageCtrl.filteredBy}}</span>
+	           </div>
+
+
+	           <div ng-show="searchPageCtrl.getErrorItems() && searchPageCtrl.showErrorItems" class="search-error">
+	               <span class="error-items">
+	                   <span class="error-icon"></span> {{searchPageCtrl.getErrorItems()}} {{ 'common.text.search.returned no results' | translate }}
+	                   <span class="off-btn" ng-click="searchPageCtrl.hideErrorItems()"></span>
+	               </span>
+	           </div>
+
+
+	           <div ng-show="searchPageCtrl.searchText.length || searchPageCtrl.filteredSearchText.length" class="search-results" ng-class="{'truncated': showTruncatedSearchText}">
+	               {{searchPageCtrl.searchText || searchPageCtrl.filteredSearchText }}
+	               <span ng-show="searchPageCtrl.codes.styleColors.length || searchPageCtrl.codes.styles.length">{{searchPageCtrl.codes.noMatchedText}}</span>
+	           </div>
+
+
+	           <div class="search-options">
+	               <span ng-show="isSearchTextOverflown" class="search-results-more-less">
+	                   <span ng-click="searchPageCtrl.toggleSearchText()">{{ showTruncatedSearchText ? 'common.text.search.see more' : 'common.text.search.see less' | translate}}
+	                   </span>
+	               </span>
+	               <span class="search-save"></span>
+	               <span class="search-share" ng-click="searchPageCtrl.clickShare()"></span>
+	           </div>
+
+
+	           <availability-filter></availability-filter>
+
+
+	           <br/>
+
+
+	           <h2 ng-show="searchPageCtrl.noResults && !searchPageCtrl.searchText.length && !searchPageCtrl.filteredSearchText.length">{{ 'common.text.search.matching no products' | translate }}</h2>
+
+
+	           <product-search-grid ng-show="searchPageCtrl.showGrid" /></product-search-grid>
+
+
+	           <product-search-list ng-show="!searchPageCtrl.showGrid"></product-search-list>
+	       </div>
+	   </div>
+	</div>
